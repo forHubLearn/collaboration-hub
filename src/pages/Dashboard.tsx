@@ -92,6 +92,11 @@ export default function Dashboard({ role }: DashboardProps) {
                 Manage Inventory <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
+            <Link to={role === 'admin' ? '/sales' : '/my-sales'}>
+              <Button variant="outline" className="w-full justify-between mt-2" size="lg">
+                {role === 'admin' ? 'View Sales' : "Today's Sales"} <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
             {role === 'admin' && (
               <Link to="/analytics">
                 <Button variant="outline" className="w-full justify-between mt-2" size="lg">

@@ -36,7 +36,7 @@ export interface Transaction {
   totalTax: number;
   totalPrice: number;
   date: string;
-  soldBy: 'admin' | 'sales';
+  soldBy: string;
 }
 
 export type UserRole = 'admin' | 'sales';

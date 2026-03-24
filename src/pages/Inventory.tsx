@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { Plus, Search, Edit2, Trash2, Package, AlertTriangle } from 'lucide-react';
+import { useState, useMemo, useRef, useEffect } from 'react';
+import { Plus, Search, Edit2, Trash2, Package, AlertTriangle, Camera, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,6 +21,41 @@ export default function Inventory() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Material | null>(null);
   const [form, setForm] = useState(emptyMat);
+  const [qrScannerOpen, setQrScannerOpen] = useState(false);
+  const qrScannerRef = useRef<any>(null);
+
+  async function startQrScanner() {
+    setQrScannerOpen(true);
+    try {
+      const { Html5Qrcode } = await import('html5-qrcode');
+      await new Promise(r => setTimeout(r, 300));
+      const el = document.getElementById('inventory-qr-reader');
+      if (!el) return;
+      const scanner = new Html5Qrcode('inventory-qr-reader');
+      qrScannerRef.current = scanner;
+      await scanner.start(
+        { facingMode: 'environment' },
+        { fps: 10, qrbox: { width: 200, height: 200 } },
+        (decodedText: string) => {
+          setForm(f => ({ ...f, qrCode: decodedText }));
+          toast({ title: 'QR Scanned', description: decodedText });
+          stopQrScanner();
+        },
+        () => {}
+      );
+    } catch {
+      toast({ title: 'Camera error', description: 'Could not access camera', variant: 'destructive' });
+      setQrScannerOpen(false);
+    }
+  }
+
+  async function stopQrScanner() {
+    if (qrScannerRef.current) {
+      try { await qrScannerRef.current.stop(); } catch {}
+      qrScannerRef.current = null;
+    }
+    setQrScannerOpen(false);
+  }
 
   const filtered = useMemo(() =>
     materials.filter(m => m.name.toLowerCase().includes(search.toLowerCase()) || m.category.toLowerCase().includes(search.toLowerCase())),
@@ -152,7 +187,15 @@ export default function Inventory() {
               </div>
               <div className="grid gap-1.5">
                 <Label>QR Code</Label>
-                <Input value={form.qrCode} onChange={e => setForm(f => ({ ...f, qrCode: e.target.value }))} />
+                <div className="flex gap-1">
+                  <Input value={form.qrCode} onChange={e => setForm(f => ({ ...f, qrCode: e.target.value }))} className="flex-1" />
+                  <Button type="button" size="icon" variant={qrScannerOpen ? 'destructive' : 'outline'} onClick={qrScannerOpen ? stopQrScanner : startQrScanner}>
+                    {qrScannerOpen ? <X className="h-4 w-4" /> : <Camera className="h-4 w-4" />}
+                  </Button>
+                </div>
+                {qrScannerOpen && (
+                  <div id="inventory-qr-reader" className="w-full max-w-[200px] mx-auto mt-2" />
+                )}
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { Camera, Search, Plus, Minus, Trash2, ShoppingCart, X, ScanLine } from 'lucide-react';
+import { Camera, Search, Plus, Minus, Trash2, ShoppingCart, X, ScanLine, Printer } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,11 +9,14 @@ import { useMaterials, useTaxes, useTransactions } from '@/lib/useStore';
 import { CartItem, Material, Transaction } from '@/lib/types';
 import { updateMaterial } from '@/lib/store';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/lib/AuthContext';
+import { printReceipt } from '@/lib/printReceipt';
 
 export default function POS({ role }: { role: 'admin' | 'sales' }) {
   const { materials, refresh: refreshMaterials } = useMaterials();
   const { taxes } = useTaxes();
   const { add: addTransaction } = useTransactions();
+  const { user } = useAuth();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -85,7 +88,7 @@ export default function POS({ role }: { role: 'admin' | 'sales' }) {
       totalTax: cartSummary.totalTax,
       totalPrice: cartSummary.total,
       date: new Date().toISOString(),
-      soldBy: role,
+      soldBy: user?.name || role,
     };
     // Reduce stock
     cart.forEach(item => {
@@ -96,6 +99,7 @@ export default function POS({ role }: { role: 'admin' | 'sales' }) {
     refreshMaterials();
     setCart([]);
     toast({ title: 'Sale Complete!', description: `Total: ₹${cartSummary.total.toLocaleString()}` });
+    printReceipt(tx);
   }
 
   // QR Scanner
