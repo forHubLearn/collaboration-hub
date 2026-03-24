@@ -1,12 +1,11 @@
 import { useState, useMemo } from 'react';
-import { Search, Filter, Calendar, User } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Search, Calendar, User } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { getTransactions } from '@/lib/store';
-import { Transaction } from '@/lib/types';
 import { useAuth } from '@/lib/AuthContext';
 import { getAllUsers } from '@/lib/auth';
 
@@ -27,7 +26,6 @@ export default function Sales({ restrictedMode = false }: SalesProps) {
   const filtered = useMemo(() => {
     let txs = allTransactions;
 
-    // Date filter
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     if (dateFilter === 'today') {
@@ -46,14 +44,12 @@ export default function Sales({ restrictedMode = false }: SalesProps) {
       txs = txs.filter(t => new Date(t.date) >= monthAgo);
     }
 
-    // User filter
     if (restrictedMode) {
       txs = txs.filter(t => t.soldBy === user?.role);
     } else if (userFilter !== 'all') {
       txs = txs.filter(t => t.soldBy === userFilter);
     }
 
-    // Search
     if (search.trim()) {
       const q = search.toLowerCase();
       txs = txs.filter(t =>
@@ -75,11 +71,10 @@ export default function Sales({ restrictedMode = false }: SalesProps) {
           {restrictedMode ? "Today's Sales" : 'Sales Report'}
         </h1>
         <p className="text-sm text-muted-foreground">
-          {filtered.length} transactions · Revenue: ₹{totalRevenue.toLocaleString()}
+          {filtered.length} transactions · Revenue: Br{totalRevenue.toLocaleString()}
         </p>
       </div>
 
-      {/* Filters */}
       <div className="flex flex-wrap gap-3">
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -115,7 +110,6 @@ export default function Sales({ restrictedMode = false }: SalesProps) {
         </div>
       </div>
 
-      {/* Summary cards */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
         <Card>
           <CardContent className="p-4">
@@ -126,18 +120,17 @@ export default function Sales({ restrictedMode = false }: SalesProps) {
         <Card>
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground">Total Revenue</p>
-            <p className="text-xl font-bold text-foreground">₹{totalRevenue.toLocaleString()}</p>
+            <p className="text-xl font-bold text-foreground">Br{totalRevenue.toLocaleString()}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground">Total Tax</p>
-            <p className="text-xl font-bold text-foreground">₹{totalTax.toLocaleString()}</p>
+            <p className="text-xl font-bold text-foreground">Br{totalTax.toLocaleString()}</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Transactions table */}
       <Card>
         <CardContent className="p-0">
           <Table>
@@ -167,9 +160,9 @@ export default function Sales({ restrictedMode = false }: SalesProps) {
                   <TableCell>
                     <Badge variant="secondary" className="text-xs">{tx.soldBy}</Badge>
                   </TableCell>
-                  <TableCell className="text-foreground">₹{tx.subtotal.toFixed(2)}</TableCell>
-                  <TableCell className="text-muted-foreground">₹{tx.totalTax.toFixed(2)}</TableCell>
-                  <TableCell className="font-medium text-foreground">₹{tx.totalPrice.toFixed(2)}</TableCell>
+                  <TableCell className="text-foreground">Br{tx.subtotal.toFixed(2)}</TableCell>
+                  <TableCell className="text-muted-foreground">Br{tx.totalTax.toFixed(2)}</TableCell>
+                  <TableCell className="font-medium text-foreground">Br{tx.totalPrice.toFixed(2)}</TableCell>
                 </TableRow>
               ))}
               {filtered.length === 0 && (

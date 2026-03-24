@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { Package, AlertTriangle, ShoppingCart, DollarSign, TrendingUp, ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -22,7 +21,7 @@ export default function Dashboard({ role }: DashboardProps) {
     { label: 'Total Products', value: materials.length, icon: Package, color: 'text-primary' },
     { label: 'Low Stock Alerts', value: lowStock.length, icon: AlertTriangle, color: 'text-destructive' },
     { label: "Today's Sales", value: todayTxs.length, icon: ShoppingCart, color: 'text-primary' },
-    { label: "Today's Revenue", value: `₹${todayRevenue.toLocaleString()}`, icon: DollarSign, color: 'text-primary' },
+    { label: "Today's Revenue", value: `Br${todayRevenue.toLocaleString()}`, icon: DollarSign, color: 'text-primary' },
   ];
 
   return (
@@ -47,7 +46,6 @@ export default function Dashboard({ role }: DashboardProps) {
       </div>
 
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
-        {/* Low Stock Alerts */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center gap-2">
@@ -76,7 +74,6 @@ export default function Dashboard({ role }: DashboardProps) {
           </CardContent>
         </Card>
 
-        {/* Quick Actions */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-lg">Quick Actions</CardTitle>
@@ -110,7 +107,7 @@ export default function Dashboard({ role }: DashboardProps) {
                   <TrendingUp className="h-4 w-4 text-primary" />
                   <p className="text-sm font-medium text-foreground">Total Revenue</p>
                 </div>
-                <p className="text-2xl font-bold text-foreground mt-1">₹{totalRevenue.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-foreground mt-1">Br{totalRevenue.toLocaleString()}</p>
                 <p className="text-xs text-muted-foreground">{transactions.length} transactions total</p>
               </CardContent>
             </Card>

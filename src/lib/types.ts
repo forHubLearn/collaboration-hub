@@ -11,7 +11,7 @@ export interface Material {
   unitPrice: number;
   quantity: number;
   alertQuantity: number;
-  qrCode: string;
+  serialCode: string;
   taxIds: string[];
   category: string;
   unit: string;

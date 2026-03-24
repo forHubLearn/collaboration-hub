@@ -1,13 +1,12 @@
 import { useState, useMemo } from 'react';
-import { Download, TrendingUp, DollarSign, ShoppingCart, Calendar } from 'lucide-react';
+import { Download, TrendingUp, DollarSign, ShoppingCart } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { getTransactions } from '@/lib/store';
-import { Transaction } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 
 type Period = 'week' | 'month' | 'quarter' | 'year';
@@ -30,7 +29,6 @@ export default function Analytics() {
   const totalTax = filtered.reduce((s, t) => s + t.totalTax, 0);
   const avgSale = filtered.length > 0 ? totalRevenue / filtered.length : 0;
 
-  // Daily chart data
   const chartData = useMemo(() => {
     const map: Record<string, { date: string; revenue: number; count: number }> = {};
     filtered.forEach(t => {
@@ -42,7 +40,6 @@ export default function Analytics() {
     return Object.values(map).map(v => ({ ...v, revenue: Math.round(v.revenue) }));
   }, [filtered]);
 
-  // Top products
   const topProducts = useMemo(() => {
     const map: Record<string, { name: string; quantity: number; revenue: number }> = {};
     filtered.forEach(t => t.items.forEach(item => {
@@ -61,7 +58,7 @@ export default function Analytics() {
     doc.text('Sales Report', 14, 22);
     doc.setFontSize(10);
     doc.text(`Period: ${period} | Generated: ${new Date().toLocaleDateString()}`, 14, 30);
-    doc.text(`Total Revenue: ₹${totalRevenue.toLocaleString()} | Transactions: ${filtered.length}`, 14, 36);
+    doc.text(`Total Revenue: Br${totalRevenue.toLocaleString()} | Transactions: ${filtered.length}`, 14, 36);
 
     autoTable(doc, {
       startY: 44,
@@ -69,9 +66,9 @@ export default function Analytics() {
       body: filtered.map(t => [
         new Date(t.date).toLocaleDateString(),
         t.items.map(i => `${i.materialName} x${i.quantity}`).join(', '),
-        `₹${t.subtotal.toFixed(2)}`,
-        `₹${t.totalTax.toFixed(2)}`,
-        `₹${t.totalPrice.toFixed(2)}`,
+        `Br${t.subtotal.toFixed(2)}`,
+        `Br${t.totalTax.toFixed(2)}`,
+        `Br${t.totalPrice.toFixed(2)}`,
       ]),
     });
     doc.save(`sales-report-${period}.pdf`);
@@ -128,7 +125,7 @@ export default function Analytics() {
             <div className="p-2 rounded-lg bg-secondary text-primary"><DollarSign className="h-5 w-5" /></div>
             <div>
               <p className="text-xs text-muted-foreground">Total Revenue</p>
-              <p className="text-xl font-bold text-foreground">₹{totalRevenue.toLocaleString()}</p>
+              <p className="text-xl font-bold text-foreground">Br{totalRevenue.toLocaleString()}</p>
             </div>
           </CardContent>
         </Card>
@@ -146,7 +143,7 @@ export default function Analytics() {
             <div className="p-2 rounded-lg bg-secondary text-primary"><TrendingUp className="h-5 w-5" /></div>
             <div>
               <p className="text-xs text-muted-foreground">Avg. Sale</p>
-              <p className="text-xl font-bold text-foreground">₹{avgSale.toFixed(0)}</p>
+              <p className="text-xl font-bold text-foreground">Br{avgSale.toFixed(0)}</p>
             </div>
           </CardContent>
         </Card>
@@ -184,7 +181,7 @@ export default function Analytics() {
                       <p className="text-xs text-muted-foreground">{p.quantity} units</p>
                     </div>
                   </div>
-                  <span className="text-sm font-medium text-foreground">₹{Math.round(p.revenue).toLocaleString()}</span>
+                  <span className="text-sm font-medium text-foreground">Br{Math.round(p.revenue).toLocaleString()}</span>
                 </div>
               ))}
               {topProducts.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No data</p>}

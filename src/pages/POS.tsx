@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { Camera, Search, Plus, Minus, Trash2, ShoppingCart, X, ScanLine, Printer } from 'lucide-react';
+import { useState, useRef, useEffect, useMemo } from 'react';
+import { Search, Plus, Minus, Trash2, ShoppingCart, X, ScanLine } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,12 +21,11 @@ export default function POS({ role }: { role: 'admin' | 'sales' }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [scannerOpen, setScannerOpen] = useState(false);
-  const scannerRef = useRef<HTMLDivElement>(null);
-  const html5QrCodeRef = useRef<any>(null);
+  const scannerRef = useRef<any>(null);
 
   const suggestions = useMemo(() => {
     if (!searchQuery.trim()) return [];
-    return materials.filter(m => m.name.toLowerCase().includes(searchQuery.toLowerCase()) || m.qrCode.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 8);
+    return materials.filter(m => m.name.toLowerCase().includes(searchQuery.toLowerCase()) || m.serialCode.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 8);
   }, [searchQuery, materials]);
 
   function addToCart(material: Material) {
@@ -90,7 +89,6 @@ export default function POS({ role }: { role: 'admin' | 'sales' }) {
       date: new Date().toISOString(),
       soldBy: user?.name || role,
     };
-    // Reduce stock
     cart.forEach(item => {
       const mat = materials.find(m => m.id === item.material.id);
       if (mat) updateMaterial({ ...mat, quantity: mat.quantity - item.quantity });
@@ -98,42 +96,40 @@ export default function POS({ role }: { role: 'admin' | 'sales' }) {
     addTransaction(tx);
     refreshMaterials();
     setCart([]);
-    toast({ title: 'Sale Complete!', description: `Total: ₹${cartSummary.total.toLocaleString()}` });
+    toast({ title: 'Sale Complete!', description: `Total: Br${cartSummary.total.toLocaleString()}` });
     printReceipt(tx);
   }
 
-  // QR Scanner
   async function startScanner() {
     setScannerOpen(true);
     try {
       const { Html5Qrcode } = await import('html5-qrcode');
-      // Wait for DOM element
       await new Promise(r => setTimeout(r, 300));
-      const el = document.getElementById('qr-reader');
+      const el = document.getElementById('pos-scanner');
       if (!el) return;
-      const scanner = new Html5Qrcode('qr-reader');
-      html5QrCodeRef.current = scanner;
+      const scanner = new Html5Qrcode('pos-scanner');
+      scannerRef.current = scanner;
       await scanner.start(
         { facingMode: 'environment' },
         { fps: 10, qrbox: { width: 250, height: 250 } },
         (decodedText: string) => {
-          const mat = materials.find(m => m.qrCode === decodedText);
+          const mat = materials.find(m => m.serialCode === decodedText);
           if (mat) { addToCart(mat); toast({ title: 'Product scanned', description: mat.name }); }
-          else toast({ title: 'Unknown QR code', description: decodedText, variant: 'destructive' });
+          else toast({ title: 'Unknown code', description: decodedText, variant: 'destructive' });
           stopScanner();
         },
         () => {}
       );
-    } catch (e) {
+    } catch {
       toast({ title: 'Camera error', description: 'Could not access camera', variant: 'destructive' });
       setScannerOpen(false);
     }
   }
 
   async function stopScanner() {
-    if (html5QrCodeRef.current) {
-      try { await html5QrCodeRef.current.stop(); } catch {}
-      html5QrCodeRef.current = null;
+    if (scannerRef.current) {
+      try { await scannerRef.current.stop(); } catch {}
+      scannerRef.current = null;
     }
     setScannerOpen(false);
   }
@@ -150,7 +146,7 @@ export default function POS({ role }: { role: 'admin' | 'sales' }) {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search product by name or QR code..."
+                placeholder="Search by name or serial code..."
                 className="pl-9"
                 value={searchQuery}
                 onChange={e => { setSearchQuery(e.target.value); setShowSuggestions(true); }}
@@ -165,23 +161,23 @@ export default function POS({ role }: { role: 'admin' | 'sales' }) {
                         <p className="text-sm font-medium text-foreground">{m.name}</p>
                         <p className="text-xs text-muted-foreground">{m.category} · Stock: {m.quantity}</p>
                       </div>
-                      <span className="text-sm font-medium text-foreground">₹{m.unitPrice}</span>
+                      <span className="text-sm font-medium text-foreground">Br{m.unitPrice}</span>
                     </button>
                   ))}
                 </div>
               )}
             </div>
             <Button variant={scannerOpen ? 'destructive' : 'outline'} onClick={scannerOpen ? stopScanner : startScanner}>
-              {scannerOpen ? <X className="h-4 w-4 mr-1" /> : <Camera className="h-4 w-4 mr-1" />}
-              {scannerOpen ? 'Close' : 'Scan QR'}
+              {scannerOpen ? <X className="h-4 w-4 mr-1" /> : <ScanLine className="h-4 w-4 mr-1" />}
+              {scannerOpen ? 'Close' : 'Scan'}
             </Button>
           </div>
 
           {scannerOpen && (
             <Card>
               <CardContent className="p-4">
-                <div id="qr-reader" className="w-full max-w-sm mx-auto" />
-                <p className="text-xs text-center text-muted-foreground mt-2">Point camera at QR code</p>
+                <div id="pos-scanner" className="w-full max-w-sm mx-auto" />
+                <p className="text-xs text-center text-muted-foreground mt-2">Point camera at barcode / serial code</p>
               </CardContent>
             </Card>
           )}
@@ -192,7 +188,7 @@ export default function POS({ role }: { role: 'admin' | 'sales' }) {
               <button key={m.id} onClick={() => addToCart(m)} className="p-3 border border-border rounded-lg hover:bg-accent text-left transition-colors">
                 <p className="text-sm font-medium text-foreground truncate">{m.name}</p>
                 <p className="text-xs text-muted-foreground">{m.quantity} {m.unit}</p>
-                <p className="text-sm font-bold text-foreground mt-1">₹{m.unitPrice}</p>
+                <p className="text-sm font-bold text-foreground mt-1">Br{m.unitPrice}</p>
               </button>
             ))}
           </div>
@@ -222,7 +218,7 @@ export default function POS({ role }: { role: 'admin' | 'sales' }) {
                           <div className="flex items-start justify-between">
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium text-foreground truncate">{item.material.name}</p>
-                              <p className="text-xs text-muted-foreground">₹{item.material.unitPrice} × {item.quantity}</p>
+                              <p className="text-xs text-muted-foreground">Br{item.material.unitPrice} × {item.quantity}</p>
                             </div>
                             <Button size="icon" variant="ghost" className="h-6 w-6 shrink-0" onClick={() => removeFromCart(item.material.id)}>
                               <Trash2 className="h-3 w-3 text-destructive" />
@@ -233,14 +229,14 @@ export default function POS({ role }: { role: 'admin' | 'sales' }) {
                             <span className="text-sm font-medium w-8 text-center text-foreground">{item.quantity}</span>
                             <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => updateQuantity(item.material.id, 1)}><Plus className="h-3 w-3" /></Button>
                             <div className="flex-1" />
-                            <span className="text-sm font-bold text-foreground">₹{itemTotal.toFixed(2)}</span>
+                            <span className="text-sm font-bold text-foreground">Br{itemTotal.toFixed(2)}</span>
                           </div>
                           {itemTaxes.length > 0 && (
                             <div className="mt-1.5 space-y-0.5">
                               {itemTaxes.map(t => (
                                 <div key={t.name} className="flex justify-between text-xs text-muted-foreground">
                                   <span>{t.name} ({t.percentage}%)</span>
-                                  <span>₹{t.amount.toFixed(2)}</span>
+                                  <span>Br{t.amount.toFixed(2)}</span>
                                 </div>
                               ))}
                             </div>
@@ -251,12 +247,12 @@ export default function POS({ role }: { role: 'admin' | 'sales' }) {
                   </div>
                   <Separator />
                   <div className="space-y-1.5">
-                    <div className="flex justify-between text-sm text-muted-foreground"><span>Subtotal</span><span>₹{cartSummary.subtotal.toFixed(2)}</span></div>
-                    <div className="flex justify-between text-sm text-muted-foreground"><span>Tax</span><span>₹{cartSummary.totalTax.toFixed(2)}</span></div>
+                    <div className="flex justify-between text-sm text-muted-foreground"><span>Subtotal</span><span>Br{cartSummary.subtotal.toFixed(2)}</span></div>
+                    <div className="flex justify-between text-sm text-muted-foreground"><span>Tax</span><span>Br{cartSummary.totalTax.toFixed(2)}</span></div>
                     <Separator />
-                    <div className="flex justify-between text-lg font-bold text-foreground"><span>Total</span><span>₹{cartSummary.total.toFixed(2)}</span></div>
+                    <div className="flex justify-between text-lg font-bold text-foreground"><span>Total</span><span>Br{cartSummary.total.toFixed(2)}</span></div>
                   </div>
-                  <Button className="w-full" size="lg" onClick={completeSale}>Complete Sale — ₹{cartSummary.total.toFixed(2)}</Button>
+                  <Button className="w-full" size="lg" onClick={completeSale}>Complete Sale — Br{cartSummary.total.toFixed(2)}</Button>
                 </>
               )}
             </CardContent>

@@ -1,6 +1,6 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
-import { Plus, Search, Edit2, Trash2, Package, AlertTriangle, Camera, X } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useMemo, useRef } from 'react';
+import { Plus, Search, Edit2, Trash2, AlertTriangle, Camera, X, ScanLine } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -12,7 +12,7 @@ import { useMaterials, useTaxes } from '@/lib/useStore';
 import { Material } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 
-const emptyMat: Omit<Material, 'id'> = { name: '', unitPrice: 0, quantity: 0, alertQuantity: 0, qrCode: '', taxIds: [], category: '', unit: '' };
+const emptyMat: Omit<Material, 'id'> = { name: '', unitPrice: 0, quantity: 0, alertQuantity: 0, serialCode: '', taxIds: [], category: '', unit: '' };
 
 export default function Inventory() {
   const { materials, add, update, remove } = useMaterials();
@@ -21,40 +21,40 @@ export default function Inventory() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Material | null>(null);
   const [form, setForm] = useState(emptyMat);
-  const [qrScannerOpen, setQrScannerOpen] = useState(false);
-  const qrScannerRef = useRef<any>(null);
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const scannerRef = useRef<any>(null);
 
-  async function startQrScanner() {
-    setQrScannerOpen(true);
+  async function startScanner() {
+    setScannerOpen(true);
     try {
       const { Html5Qrcode } = await import('html5-qrcode');
       await new Promise(r => setTimeout(r, 300));
-      const el = document.getElementById('inventory-qr-reader');
+      const el = document.getElementById('inventory-scanner');
       if (!el) return;
-      const scanner = new Html5Qrcode('inventory-qr-reader');
-      qrScannerRef.current = scanner;
+      const scanner = new Html5Qrcode('inventory-scanner');
+      scannerRef.current = scanner;
       await scanner.start(
         { facingMode: 'environment' },
         { fps: 10, qrbox: { width: 200, height: 200 } },
         (decodedText: string) => {
-          setForm(f => ({ ...f, qrCode: decodedText }));
-          toast({ title: 'QR Scanned', description: decodedText });
-          stopQrScanner();
+          setForm(f => ({ ...f, serialCode: decodedText }));
+          toast({ title: 'Code Scanned', description: decodedText });
+          stopScanner();
         },
         () => {}
       );
     } catch {
       toast({ title: 'Camera error', description: 'Could not access camera', variant: 'destructive' });
-      setQrScannerOpen(false);
+      setScannerOpen(false);
     }
   }
 
-  async function stopQrScanner() {
-    if (qrScannerRef.current) {
-      try { await qrScannerRef.current.stop(); } catch {}
-      qrScannerRef.current = null;
+  async function stopScanner() {
+    if (scannerRef.current) {
+      try { await scannerRef.current.stop(); } catch {}
+      scannerRef.current = null;
     }
-    setQrScannerOpen(false);
+    setScannerOpen(false);
   }
 
   const filtered = useMemo(() =>
@@ -63,7 +63,7 @@ export default function Inventory() {
   );
 
   function openAdd() { setEditing(null); setForm(emptyMat); setDialogOpen(true); }
-  function openEdit(m: Material) { setEditing(m); setForm({ name: m.name, unitPrice: m.unitPrice, quantity: m.quantity, alertQuantity: m.alertQuantity, qrCode: m.qrCode, taxIds: [...m.taxIds], category: m.category, unit: m.unit }); setDialogOpen(true); }
+  function openEdit(m: Material) { setEditing(m); setForm({ name: m.name, unitPrice: m.unitPrice, quantity: m.quantity, alertQuantity: m.alertQuantity, serialCode: m.serialCode, taxIds: [...m.taxIds], category: m.category, unit: m.unit }); setDialogOpen(true); }
 
   function handleSave() {
     if (!form.name || form.unitPrice <= 0) { toast({ title: 'Error', description: 'Name and price are required', variant: 'destructive' }); return; }
@@ -75,6 +75,7 @@ export default function Inventory() {
       toast({ title: 'Added', description: `${form.name} added to inventory` });
     }
     setDialogOpen(false);
+    stopScanner();
   }
 
   function handleDelete(m: Material) {
@@ -110,7 +111,7 @@ export default function Inventory() {
                 <TableHead>Price</TableHead>
                 <TableHead>Stock</TableHead>
                 <TableHead>Alert</TableHead>
-                <TableHead>QR Code</TableHead>
+                <TableHead>Serial Code</TableHead>
                 <TableHead>Taxes</TableHead>
                 <TableHead className="w-20">Actions</TableHead>
               </TableRow>
@@ -126,7 +127,7 @@ export default function Inventory() {
                         <p className="text-xs text-muted-foreground">{m.category} · {m.unit}</p>
                       </div>
                     </TableCell>
-                    <TableCell className="text-foreground">₹{m.unitPrice}</TableCell>
+                    <TableCell className="text-foreground">Br{m.unitPrice}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1.5">
                         <span className={isLow ? 'text-destructive font-medium' : 'text-foreground'}>{m.quantity}</span>
@@ -134,7 +135,7 @@ export default function Inventory() {
                       </div>
                     </TableCell>
                     <TableCell className="text-muted-foreground">{m.alertQuantity}</TableCell>
-                    <TableCell><code className="text-xs bg-secondary px-1.5 py-0.5 rounded text-foreground">{m.qrCode}</code></TableCell>
+                    <TableCell><code className="text-xs bg-secondary px-1.5 py-0.5 rounded text-foreground">{m.serialCode}</code></TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
                         {m.taxIds.map(tid => {
@@ -160,7 +161,7 @@ export default function Inventory() {
         </CardContent>
       </Card>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) stopScanner(); }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>{editing ? 'Edit Material' : 'Add Material'}</DialogTitle>
@@ -172,7 +173,7 @@ export default function Inventory() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="grid gap-1.5">
-                <Label>Unit Price (₹)</Label>
+                <Label>Unit Price (Br)</Label>
                 <Input type="number" value={form.unitPrice || ''} onChange={e => setForm(f => ({ ...f, unitPrice: +e.target.value }))} />
               </div>
               <div className="grid gap-1.5">
@@ -186,15 +187,15 @@ export default function Inventory() {
                 <Input type="number" value={form.alertQuantity || ''} onChange={e => setForm(f => ({ ...f, alertQuantity: +e.target.value }))} />
               </div>
               <div className="grid gap-1.5">
-                <Label>QR Code</Label>
+                <Label>Serial Code</Label>
                 <div className="flex gap-1">
-                  <Input value={form.qrCode} onChange={e => setForm(f => ({ ...f, qrCode: e.target.value }))} className="flex-1" />
-                  <Button type="button" size="icon" variant={qrScannerOpen ? 'destructive' : 'outline'} onClick={qrScannerOpen ? stopQrScanner : startQrScanner}>
-                    {qrScannerOpen ? <X className="h-4 w-4" /> : <Camera className="h-4 w-4" />}
+                  <Input value={form.serialCode} onChange={e => setForm(f => ({ ...f, serialCode: e.target.value }))} className="flex-1" placeholder="Scan or type..." />
+                  <Button type="button" size="icon" variant={scannerOpen ? 'destructive' : 'outline'} onClick={scannerOpen ? stopScanner : startScanner}>
+                    {scannerOpen ? <X className="h-4 w-4" /> : <ScanLine className="h-4 w-4" />}
                   </Button>
                 </div>
-                {qrScannerOpen && (
-                  <div id="inventory-qr-reader" className="w-full max-w-[200px] mx-auto mt-2" />
+                {scannerOpen && (
+                  <div id="inventory-scanner" className="w-full max-w-[200px] mx-auto mt-2" />
                 )}
               </div>
             </div>
