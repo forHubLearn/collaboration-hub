@@ -187,7 +187,15 @@ export default function Inventory() {
               </div>
               <div className="grid gap-1.5">
                 <Label>QR Code</Label>
-                <Input value={form.qrCode} onChange={e => setForm(f => ({ ...f, qrCode: e.target.value }))} />
+                <div className="flex gap-1">
+                  <Input value={form.qrCode} onChange={e => setForm(f => ({ ...f, qrCode: e.target.value }))} className="flex-1" />
+                  <Button type="button" size="icon" variant={qrScannerOpen ? 'destructive' : 'outline'} onClick={qrScannerOpen ? stopQrScanner : startQrScanner}>
+                    {qrScannerOpen ? <X className="h-4 w-4" /> : <Camera className="h-4 w-4" />}
+                  </Button>
+                </div>
+                {qrScannerOpen && (
+                  <div id="inventory-qr-reader" className="w-full max-w-[200px] mx-auto mt-2" />
+                )}
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
