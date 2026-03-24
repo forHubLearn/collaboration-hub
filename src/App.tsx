@@ -6,26 +6,46 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
-import { useRole } from '@/lib/useStore';
+import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { seedData } from '@/lib/store';
 import Dashboard from '@/pages/Dashboard';
 import POS from '@/pages/POS';
 import Inventory from '@/pages/Inventory';
 import Taxes from '@/pages/Taxes';
 import Analytics from '@/pages/Analytics';
+import Sales from '@/pages/Sales';
+import UserManagement from '@/pages/UserManagement';
+import Login from '@/pages/Login';
 import NotFound from '@/pages/NotFound';
 
 const queryClient = new QueryClient();
 
+function RequireAuth({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  if (!user) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+}
+
+function RequireAdmin({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.role !== 'admin') return <Navigate to="/" replace />;
+  return <>{children}</>;
+}
+
 function AppLayout() {
-  const { role, setRole } = useRole();
+  const { user } = useAuth();
 
   useEffect(() => { seedData(); }, []);
+
+  if (!user) return <Navigate to="/login" replace />;
+
+  const role = user.role;
 
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
-        <AppSidebar role={role} onRoleChange={setRole} />
+        <AppSidebar role={role} />
         <div className="flex-1 flex flex-col min-w-0">
           <header className="h-12 flex items-center border-b border-border px-2 shrink-0">
             <SidebarTrigger />
@@ -35,8 +55,11 @@ function AppLayout() {
               <Route path="/" element={<Dashboard role={role} />} />
               <Route path="/pos" element={<POS role={role} />} />
               <Route path="/inventory" element={<Inventory />} />
-              <Route path="/taxes" element={role === 'admin' ? <Taxes /> : <Navigate to="/" />} />
-              <Route path="/analytics" element={role === 'admin' ? <Analytics /> : <Navigate to="/" />} />
+              <Route path="/taxes" element={<RequireAdmin><Taxes /></RequireAdmin>} />
+              <Route path="/analytics" element={<RequireAdmin><Analytics /></RequireAdmin>} />
+              <Route path="/sales" element={<RequireAdmin><Sales /></RequireAdmin>} />
+              <Route path="/my-sales" element={<Sales restrictedMode />} />
+              <Route path="/users" element={<RequireAdmin><UserManagement /></RequireAdmin>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
@@ -52,7 +75,12 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <AppLayout />
+        <AuthProvider>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/*" element={<AppLayout />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

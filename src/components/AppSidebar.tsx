@@ -1,4 +1,4 @@
-import { LayoutDashboard, ShoppingCart, Package, Receipt, BarChart3, Settings, UserCog } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Package, Receipt, BarChart3, Users, LogOut, DollarSign } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
 import {
@@ -9,22 +9,26 @@ import { UserRole } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { getLowStockMaterials } from '@/lib/store';
+import { useAuth } from '@/lib/AuthContext';
 
 const navItems = [
   { title: 'Dashboard', url: '/', icon: LayoutDashboard, roles: ['admin', 'sales'] },
   { title: 'POS', url: '/pos', icon: ShoppingCart, roles: ['admin', 'sales'] },
   { title: 'Inventory', url: '/inventory', icon: Package, roles: ['admin', 'sales'] },
+  { title: 'Sales', url: '/sales', icon: DollarSign, roles: ['admin'] },
+  { title: "My Sales", url: '/my-sales', icon: DollarSign, roles: ['sales'] },
   { title: 'Taxes', url: '/taxes', icon: Receipt, roles: ['admin'] },
   { title: 'Analytics', url: '/analytics', icon: BarChart3, roles: ['admin'] },
+  { title: 'Users', url: '/users', icon: Users, roles: ['admin'] },
 ];
 
 interface AppSidebarProps {
   role: UserRole;
-  onRoleChange: (role: UserRole) => void;
 }
 
-export function AppSidebar({ role, onRoleChange }: AppSidebarProps) {
+export function AppSidebar({ role }: AppSidebarProps) {
   const { state } = useSidebar();
+  const { user, logout } = useAuth();
   const collapsed = state === 'collapsed';
   const location = useLocation();
   const lowStock = getLowStockMaterials().length;
@@ -60,13 +64,14 @@ export function AppSidebar({ role, onRoleChange }: AppSidebarProps) {
       </SidebarContent>
       {!collapsed && (
         <SidebarFooter className="p-4 border-t border-sidebar-border">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-            <UserCog className="h-3.5 w-3.5" /> Role
+          <div className="text-xs text-muted-foreground mb-2">
+            <p className="font-medium text-foreground">{user?.name}</p>
+            <p>{user?.email}</p>
+            <Badge variant="secondary" className="text-xs mt-1">{role.toUpperCase()}</Badge>
           </div>
-          <div className="flex gap-1">
-            <Button size="sm" variant={role === 'admin' ? 'default' : 'outline'} className="flex-1 text-xs h-7" onClick={() => onRoleChange('admin')}>Admin</Button>
-            <Button size="sm" variant={role === 'sales' ? 'default' : 'outline'} className="flex-1 text-xs h-7" onClick={() => onRoleChange('sales')}>Sales</Button>
-          </div>
+          <Button size="sm" variant="outline" className="w-full text-xs h-7" onClick={logout}>
+            <LogOut className="h-3 w-3 mr-1" /> Sign Out
+          </Button>
         </SidebarFooter>
       )}
     </Sidebar>
