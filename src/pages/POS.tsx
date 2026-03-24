@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { Camera, Search, Plus, Minus, Trash2, ShoppingCart, X, ScanLine } from 'lucide-react';
+import { Camera, Search, Plus, Minus, Trash2, ShoppingCart, X, ScanLine, Printer } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
