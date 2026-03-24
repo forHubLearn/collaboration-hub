@@ -16,6 +16,7 @@ export default function POS({ role }: { role: 'admin' | 'sales' }) {
   const { materials, refresh: refreshMaterials } = useMaterials();
   const { taxes } = useTaxes();
   const { add: addTransaction } = useTransactions();
+  const { user } = useAuth();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
