@@ -88,7 +88,7 @@ export default function POS({ role }: { role: 'admin' | 'sales' }) {
       totalTax: cartSummary.totalTax,
       totalPrice: cartSummary.total,
       date: new Date().toISOString(),
-      soldBy: role,
+      soldBy: user?.name || role,
     };
     // Reduce stock
     cart.forEach(item => {
@@ -99,6 +99,7 @@ export default function POS({ role }: { role: 'admin' | 'sales' }) {
     refreshMaterials();
     setCart([]);
     toast({ title: 'Sale Complete!', description: `Total: ₹${cartSummary.total.toLocaleString()}` });
+    printReceipt(tx);
   }
 
   // QR Scanner
