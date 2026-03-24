@@ -9,6 +9,8 @@ import { useMaterials, useTaxes, useTransactions } from '@/lib/useStore';
 import { CartItem, Material, Transaction } from '@/lib/types';
 import { updateMaterial } from '@/lib/store';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/lib/AuthContext';
+import { printReceipt } from '@/lib/printReceipt';
 
 export default function POS({ role }: { role: 'admin' | 'sales' }) {
   const { materials, refresh: refreshMaterials } = useMaterials();
