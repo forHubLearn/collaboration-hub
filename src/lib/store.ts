@@ -57,14 +57,14 @@ export function seedData() {
   ];
 
   const materials: Material[] = [
-    { id: 'mat-1', name: 'Portland Cement (50kg)', unitPrice: 350, quantity: 120, alertQuantity: 20, qrCode: 'CEM-001', taxIds: ['tax-1'], category: 'Cement', unit: 'bag' },
-    { id: 'mat-2', name: 'TMT Steel Bars (12mm)', unitPrice: 65, quantity: 500, alertQuantity: 50, qrCode: 'STL-002', taxIds: ['tax-1', 'tax-2'], category: 'Steel', unit: 'kg' },
-    { id: 'mat-3', name: 'River Sand', unitPrice: 45, quantity: 200, alertQuantity: 30, qrCode: 'SND-003', taxIds: ['tax-1'], category: 'Sand', unit: 'cft' },
-    { id: 'mat-4', name: 'Red Bricks', unitPrice: 8, quantity: 5000, alertQuantity: 500, qrCode: 'BRK-004', taxIds: ['tax-1', 'tax-3'], category: 'Bricks', unit: 'piece' },
-    { id: 'mat-5', name: 'Crushed Stone (20mm)', unitPrice: 35, quantity: 15, alertQuantity: 20, qrCode: 'AGG-005', taxIds: ['tax-1'], category: 'Aggregates', unit: 'cft' },
-    { id: 'mat-6', name: 'PPC Cement (50kg)', unitPrice: 330, quantity: 80, alertQuantity: 15, qrCode: 'CEM-006', taxIds: ['tax-1'], category: 'Cement', unit: 'bag' },
-    { id: 'mat-7', name: 'Binding Wire', unitPrice: 85, quantity: 10, alertQuantity: 10, qrCode: 'WIR-007', taxIds: ['tax-1', 'tax-2'], category: 'Steel', unit: 'kg' },
-    { id: 'mat-8', name: 'M-Sand', unitPrice: 55, quantity: 150, alertQuantity: 25, qrCode: 'SND-008', taxIds: ['tax-1'], category: 'Sand', unit: 'cft' },
+    { id: 'mat-1', name: 'Portland Cement (50kg)', unitPrice: 350, quantity: 120, alertQuantity: 20, serialCode: 'CEM-001', taxIds: ['tax-1'], category: 'Cement', unit: 'bag' },
+    { id: 'mat-2', name: 'TMT Steel Bars (12mm)', unitPrice: 65, quantity: 500, alertQuantity: 50, serialCode: 'STL-002', taxIds: ['tax-1', 'tax-2'], category: 'Steel', unit: 'kg' },
+    { id: 'mat-3', name: 'River Sand', unitPrice: 45, quantity: 200, alertQuantity: 30, serialCode: 'SND-003', taxIds: ['tax-1'], category: 'Sand', unit: 'cft' },
+    { id: 'mat-4', name: 'Red Bricks', unitPrice: 8, quantity: 5000, alertQuantity: 500, serialCode: 'BRK-004', taxIds: ['tax-1', 'tax-3'], category: 'Bricks', unit: 'piece' },
+    { id: 'mat-5', name: 'Crushed Stone (20mm)', unitPrice: 35, quantity: 15, alertQuantity: 20, serialCode: 'AGG-005', taxIds: ['tax-1'], category: 'Aggregates', unit: 'cft' },
+    { id: 'mat-6', name: 'PPC Cement (50kg)', unitPrice: 330, quantity: 80, alertQuantity: 15, serialCode: 'CEM-006', taxIds: ['tax-1'], category: 'Cement', unit: 'bag' },
+    { id: 'mat-7', name: 'Binding Wire', unitPrice: 85, quantity: 10, alertQuantity: 10, serialCode: 'WIR-007', taxIds: ['tax-1', 'tax-2'], category: 'Steel', unit: 'kg' },
+    { id: 'mat-8', name: 'M-Sand', unitPrice: 55, quantity: 150, alertQuantity: 25, serialCode: 'SND-008', taxIds: ['tax-1'], category: 'Sand', unit: 'cft' },
   ];
 
   // Seed some transactions for analytics
