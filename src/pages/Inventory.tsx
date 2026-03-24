@@ -21,6 +21,41 @@ export default function Inventory() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Material | null>(null);
   const [form, setForm] = useState(emptyMat);
+  const [qrScannerOpen, setQrScannerOpen] = useState(false);
+  const qrScannerRef = useRef<any>(null);
+
+  async function startQrScanner() {
+    setQrScannerOpen(true);
+    try {
+      const { Html5Qrcode } = await import('html5-qrcode');
+      await new Promise(r => setTimeout(r, 300));
+      const el = document.getElementById('inventory-qr-reader');
+      if (!el) return;
+      const scanner = new Html5Qrcode('inventory-qr-reader');
+      qrScannerRef.current = scanner;
+      await scanner.start(
+        { facingMode: 'environment' },
+        { fps: 10, qrbox: { width: 200, height: 200 } },
+        (decodedText: string) => {
+          setForm(f => ({ ...f, qrCode: decodedText }));
+          toast({ title: 'QR Scanned', description: decodedText });
+          stopQrScanner();
+        },
+        () => {}
+      );
+    } catch {
+      toast({ title: 'Camera error', description: 'Could not access camera', variant: 'destructive' });
+      setQrScannerOpen(false);
+    }
+  }
+
+  async function stopQrScanner() {
+    if (qrScannerRef.current) {
+      try { await qrScannerRef.current.stop(); } catch {}
+      qrScannerRef.current = null;
+    }
+    setQrScannerOpen(false);
+  }
 
   const filtered = useMemo(() =>
     materials.filter(m => m.name.toLowerCase().includes(search.toLowerCase()) || m.category.toLowerCase().includes(search.toLowerCase())),
