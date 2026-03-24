@@ -8,6 +8,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, ResponsiveContainer } from 'recharts';
 import { getTransactions } from '@/lib/store';
 import { Transaction } from '@/lib/types';
+import { toast } from '@/hooks/use-toast';
 
 type Period = 'week' | 'month' | 'quarter' | 'year';
 
@@ -194,6 +195,3 @@ export default function Analytics() {
     </div>
   );
 }
-
-// Need toast import
-import { toast } from '@/hooks/use-toast';
